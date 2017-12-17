@@ -1,4 +1,5 @@
 import Draggabilly from 'draggabilly';
+import pick from 'lodash/pick';
 
 const tabTemplate = `
   <div class="chrome-tab">
@@ -97,7 +98,7 @@ class Tabs {
     const tabWidth = this.tabWidth;
 
     this.cleanUpPreviouslyDraggedTabs();
-    this.tabEls.forEach((tabEl) => tabEl.style.width = `${tabWidth  }px`);
+    this.tabEls.forEach((tabEl) => tabEl.style.width = `${tabWidth}px`);
     requestAnimationFrame(() => {
       let styleHTML = '';
       this.tabPositions.forEach((left, i) => {
@@ -141,19 +142,22 @@ class Tabs {
     tabProperties = Object.assign({}, defaultTapProperties, tabProperties);
     this.tabContentEl.appendChild(tabEl);
     this.updateTab(tabEl, tabProperties);
-    this.emit('tabAdd', { tabEl });
+    this.emit('tabAdd', { tabEl, tabProperties });
     this.setCurrentTab(tabEl);
     this.layoutTabs();
     this.fixZIndexes();
     this.setupDraggabilly();
   }
 
+  getProperties = (tabEl) => pick(tabEl.dataset, ['id', 'title'])
+
   setCurrentTab(tabEl) {
     const currentTab = this.el.querySelector('.chrome-tab-current');
     if (currentTab) currentTab.classList.remove('chrome-tab-current');
     tabEl.classList.add('chrome-tab-current');
     this.fixZIndexes();
-    this.emit('activeTabChange', { tabEl });
+    const tabProperties = this.getProperties(tabEl);
+    this.emit('activeTabChange', { tabEl, tabProperties });
   }
 
   removeTab(tabEl) {
@@ -171,7 +175,9 @@ class Tabs {
     this.setupDraggabilly();
   }
 
-  updateTab(tabEl, tabProperties) {
+  updateTab = (tabEl, tabProperties) => {
+    tabEl.dataset.id = tabProperties.id;
+    tabEl.dataset.title = tabProperties.title;
     tabEl.querySelector('.chrome-tab-title').textContent = tabProperties.title;
     tabEl.querySelector('.chrome-tab-favicon').style.backgroundImage = `url('${tabProperties.favicon}')`;
   }

@@ -1,0 +1,10 @@
+.tabContent{
+}
+
+.tabPane{
+  display: none;
+}
+
+.active{
+  display: block;
+}
